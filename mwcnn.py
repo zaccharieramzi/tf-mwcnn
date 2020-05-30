@@ -51,6 +51,8 @@ class DWT(Layer):
 
 class IWT(Layer):
     def call(self, inputs):
+        # TODO: translate this in tf. Ideally we would avoid tensor_scatter_nd_add
+        # because it is such a pain to write, but I might have to resort to it.
         r = 2
         in_batch, in_channel, in_height, in_width = tf.shape(inputs)
         #print([in_batch, in_channel, in_height, in_width])
