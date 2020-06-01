@@ -13,7 +13,7 @@ DEFAULT_N_CONVS_PER_SCALE = [4] * 3
 
 
 class MWCNNConvBlock(Layer):
-    def __init__(self, n_filters=256, kernel_size=3, **kwargs):
+    def __init__(self, n_filters=256, kernel_size=3, bn=False, **kwargs):
         super(MWCNNConvBlock, self).__init__(**kwargs)
         self.n_filters = n_filters
         self.kernel_size = kernel_size
@@ -23,12 +23,16 @@ class MWCNNConvBlock(Layer):
             padding='same',
             use_bias=False,
         )
-        self.bn = BatchNormalization()
+        if bn:
+            self.bn = BatchNormalization()
+        else:
+            self.bn = None
         self.activation = Activation('relu')
 
     def call(self, inputs):
         outputs = self.conv(inputs)
-        outputs = self.bn(outputs)
+        if self.bn is not None:
+            outputs = self.bn(outputs)
         outputs = self.activation(outputs)
         return outputs
 
@@ -110,6 +114,7 @@ class MWCNN(Model):
             self,
             n_scales=3,
             kernel_size=3,
+            bn=False,
             n_filters_per_scale=DEFAULT_N_FILTERS_PER_SCALE,
             n_convs_per_scale=DEFAULT_N_CONVS_PER_SCALE,
             **kwargs,
@@ -117,12 +122,14 @@ class MWCNN(Model):
         super(MWCNN, self).__init__(**kwargs)
         self.n_scales = n_scales
         self.kernel_size = kernel_size
+        self.bn = bn
         self.n_filters_per_scale = n_filters_per_scale
         self.n_convs_per_scale = n_convs_per_scale
         self.conv_blocks_per_scale = [
             [MWCNNConvBlock(
                 n_filters=self.n_filters_for_conv_for_scale(i_scale, i_conv),
                 kernel_size=self.kernel_size,
+                bn=self.bn,
             ) for i_conv in range(self.n_convs_per_scale[i_scale] * 2)]
             for i_scale in range(self.n_scales)
         ]
