@@ -19,7 +19,8 @@ The goal of this implementation in TensorFlow is to be easy to read and to adapt
 
 The only thing I am currently not happy about is the implementation of `IWT`.
 Currently, it is very difficult to read because tensor slice assignment is
-impossible as-is in TensorFlow
+impossible as-is in TensorFlow.
+See for example this [SO question](https://stackoverflow.com/q/62092147/4332585).
 
 # Contributing
 
