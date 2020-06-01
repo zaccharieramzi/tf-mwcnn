@@ -1,7 +1,7 @@
 language: python
 install:
-  - pip install pytest
+  - pip install pytest numpy
   - pip install tensorflow
 
 script:
-  - pytest focnet_test.py
+  - pytest mwcnn_test.py
