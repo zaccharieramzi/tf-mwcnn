@@ -20,5 +20,20 @@ def test_iwt():
     tf_tester.assertAllClose(x_res, x_expected)
 
 def test_mwcnn():
-    model = MWCNN(n_filters_per_scale=[4, 8, 8], n_convs_per_scale=[2, 2, 2])
+    model = MWCNN(
+        n_filters_per_scale=[4, 8, 16],
+        n_convs_per_scale=[2, 2, 2],
+        n_first_convs=2,
+        first_conv_n_filters=4,
+    )
+    model.build(tf.TensorShape([None, None, None, 1]))
+
+def test_mwcnn_conference():
+    model = MWCNN(
+        n_filters_per_scale=[4, 8, 8],
+        n_convs_per_scale=[2, 2, 2],
+        n_first_convs=0,
+        first_conv_n_filters=0,
+        bn=True,
+    )
     model.build(tf.TensorShape([None, None, None, 1]))
