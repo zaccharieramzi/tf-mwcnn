@@ -1,0 +1,7 @@
+language: python
+install:
+  - pip install pytest
+  - pip install tensorflow
+
+script:
+  - pytest focnet_test.py
