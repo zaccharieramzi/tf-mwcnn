@@ -51,28 +51,59 @@ class DWT(Layer):
 
 class IWT(Layer):
     def call(self, inputs):
-        # TODO: translate this in tf. Ideally we would avoid tensor_scatter_nd_add
-        # because it is such a pain to write, but I might have to resort to it.
-        r = 2
-        in_batch, in_channel, in_height, in_width = tf.shape(inputs)
-        #print([in_batch, in_channel, in_height, in_width])
-        out_batch, out_channel, out_height, out_width = in_batch, int(
-            in_channel / (r ** 2)), r * in_height, r * in_width
-        x1 = inputs[:, 0:out_channel, :, :] / 2
-        x2 = inputs[:, out_channel:out_channel * 2, :, :] / 2
-        x3 = inputs[:, out_channel * 2:out_channel * 3, :, :] / 2
-        x4 = inputs[:, out_channel * 3:out_channel * 4, :, :] / 2
+        # NOTE: it is for now impossible to do slice assignment in tensorflow
+        # there are some on-going GH issues or SO questions but for now
+        # tensor_scatter_nd_add seems to be the only way to go.
+        # https://stackoverflow.com/questions/62092147/how-to-efficiently-assign-to-a-slice-of-a-tensor-in-tensorflow
+        in_shape = tf.shape(inputs)
+        batch_size = in_shape[0]
+        height, width = in_shape[1:3]
+        outputs = tf.zeros([batch_size, 2 * height, 2* width, 1])
+        # for now we only consider greyscale
+        x1 = inputs[..., 0:1] / 2
+        x2 = inputs[..., 1:2] / 2
+        x3 = inputs[..., 2:3] / 2
+        x4 = inputs[..., 3:4] / 2
+        # in the following, E denotes even and O denotes odd
+        x_EE = x1 - x2 - x3 + x4
+        x_OE = x1 - x2 + x3 - x4
+        x_EO = x1 + x2 - x3 - x4
+        x_OO = x1 + x2 + x3 + x4
 
+        # now the preparation to tensor_scatter_nd_add
+        height_range_E = 2 * tf.range(height)
+        height_range_O = height_range_E + 1
+        width_range_E = 2 * tf.range(width)
+        width_range_O = width_range_E + 1
 
-        h = torch.zeros([out_batch, out_channel, out_height, out_width]).float().cuda()
+        # this transpose allows to only index the varying dimensions
+        # only the first dimensions can be indexed in tensor_scatter_nd_add
+        # we also need to match the indices with the updates reshaping
+        scatter_nd_perm = [2, 1, 3, 0]
+        outputs_reshaped = tf.transpose(outputs, perm=scatter_nd_perm)
 
-        h[:, :, 0::2, 0::2] = x1 - x2 - x3 + x4
-        h[:, :, 1::2, 0::2] = x1 - x2 + x3 - x4
-        h[:, :, 0::2, 1::2] = x1 + x2 - x3 - x4
-        h[:, :, 1::2, 1::2] = x1 + x2 + x3 + x4
+        combos_list = [
+            ((height_range_E, width_range_E), x_EE),
+            ((height_range_O, width_range_E), x_OE),
+            ((height_range_E, width_range_O), x_EO),
+            ((height_range_O, width_range_O), x_OO),
+        ]
+        for (height_range, width_range), x_comb in combos_list:
+            h_range, w_range = tf.meshgrid(height_range, width_range)
+            h_range = tf.reshape(h_range, (-1,))
+            w_range = tf.reshape(w_range, (-1,))
+            combo_indices = tf.stack([w_range, h_range], axis=-1)
+            combo_reshaped = tf.transpose(x_comb, perm=scatter_nd_perm)
+            outputs_reshaped = tf.tensor_scatter_nd_add(
+                outputs_reshaped,
+                indices=combo_indices,
+                updates=tf.reshape(combo_reshaped, (-1, batch_size, 1)),
+            )
 
-        return h
+        inverse_scatter_nd_perm = [3, 1, 0, 2]
+        outputs = tf.transpose(outputs_reshaped, perm=inverse_scatter_nd_perm)
 
+        return outputs
 
 class MWCNN(Model):
     def __init__(
@@ -103,7 +134,6 @@ class MWCNN(Model):
             padding='same',
             use_bias=True,
         )
-        # TODO: implement these 2 wavelet operators
         self.pooling = DWT()
         self.unpooling = IWT()
 
