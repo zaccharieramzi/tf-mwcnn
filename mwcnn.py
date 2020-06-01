@@ -8,8 +8,10 @@ from tensorflow.keras.layers import (
 )
 
 
-DEFAULT_N_FILTERS_PER_SCALE = [160, 256, 256]
-DEFAULT_N_CONVS_PER_SCALE = [4] * 3
+DEFAULT_N_FILTERS_PER_SCALE = [128, 256, 512]
+DEFAULT_N_CONVS_PER_SCALE = [3] * 3
+DEFAULT_N_FILTERS_PER_SCALE_CONF = [160, 256, 256]
+DEFAULT_N_CONVS_PER_SCALE_CONF = [4] * 3
 
 
 class MWCNNConvBlock(Layer):
@@ -117,6 +119,8 @@ class MWCNN(Model):
             bn=False,
             n_filters_per_scale=DEFAULT_N_FILTERS_PER_SCALE,
             n_convs_per_scale=DEFAULT_N_CONVS_PER_SCALE,
+            n_first_convs=3,
+            first_conv_n_filters=64,
             **kwargs,
         ):
         super(MWCNN, self).__init__(**kwargs)
@@ -125,6 +129,14 @@ class MWCNN(Model):
         self.bn = bn
         self.n_filters_per_scale = n_filters_per_scale
         self.n_convs_per_scale = n_convs_per_scale
+        self.n_first_convs = n_first_convs
+        self.first_conv_n_filters = first_conv_n_filters
+        if self.n_first_convs > 0:
+            self.first_convs = [MWCNNConvBlock(
+                n_filters=self.first_conv_n_filters,
+                kernel_size=self.kernel_size,
+                bn=self.bn,
+            ) for _ in range(2 * self.n_first_convs)]
         self.conv_blocks_per_scale = [
             [MWCNNConvBlock(
                 n_filters=self.n_filters_for_conv_for_scale(i_scale, i_conv),
@@ -153,10 +165,13 @@ class MWCNN(Model):
     def call(self, inputs):
         last_feature_for_scale = []
         current_feature = inputs
+        if self.n_first_convs > 0:
+            for conv in self.first_convs[:self.n_first_convs]:
+                current_feature = conv(current_feature)
         for i_scale in range(self.n_scales):
             current_feature = self.pooling(current_feature)
-            for i_conv in range(self.n_convs_per_scale[i_scale]):
-                conv = self.conv_blocks_per_scale[i_scale][i_conv]
+            n_convs = self.n_convs_per_scale[i_scale]
+            for conv in self.conv_blocks_per_scale[i_scale][:n_convs]:
                 current_feature = conv(current_feature)
             last_feature_for_scale.append(current_feature)
         for i_scale in range(self.n_scales - 1, -1, -1):
@@ -164,8 +179,11 @@ class MWCNN(Model):
                 current_feature = self.unpooling(current_feature)
                 current_feature = current_feature + last_feature_for_scale[i_scale]
             n_convs = self.n_convs_per_scale[i_scale]
-            for i_conv in range(n_convs, 2*n_convs):
-                conv = self.conv_blocks_per_scale[i_scale][i_conv]
+            for conv in self.conv_blocks_per_scale[i_scale][n_convs:]:
                 current_feature = conv(current_feature)
-        outputs = inputs + self.unpooling(current_feature)
+        current_feature = self.unpooling(current_feature)
+        if self.n_first_convs > 0:
+            for conv in self.first_convs[self.n_first_convs:]:
+                current_feature = conv(current_feature)
+        outputs = inputs + current_feature
         return outputs
