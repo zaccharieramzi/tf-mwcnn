@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-from mwcnn import IWT
+from mwcnn import IWT, MWCNN
 
 
 def test_iwt():
@@ -18,3 +18,7 @@ def test_iwt():
     x_expected[:, 1::2, 1::2] = x1 + x2 + x3 + x4
     tf_tester = tf.test.TestCase()
     tf_tester.assertAllClose(x_res, x_expected)
+
+def test_mwcnn():
+    model = MWCNN(n_filters_per_scale=[4, 8, 8], n_convs_per_scale=[2, 2, 2])
+    model.build(tf.TensorShape([None, None, None, 1]))
