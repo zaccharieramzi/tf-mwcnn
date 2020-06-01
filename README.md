@@ -28,9 +28,7 @@ There are some differences in the 2 papers defining the MWCNN.
 We provide the 2 defaults and the ways to implement both slightly different
 architectures.
 
-The Figures defining the implementations are:
-- 3. in the conference paper.
-- 3. in the journal paper.
+The Figures defining the implementations are 3. in each paper.
 
 Some of these differences are acknowledged in the journal paper:
 > Compared to our previous work [24], we have made several improvements such as:
@@ -38,6 +36,21 @@ Some of these differences are acknowledged in the journal paper:
 > blocks to extract features from input, which is empirically shown to be
 > beneficial for image restoration. (ii) In the 3rd hierarchical level, we use
 > more feature maps to enhance feature representation.
+
+## Implementations with `tf-mwcnn`
+
+You can implement the journal-style MWCNN simply with `MWCNN()`.
+To implement the conference-style MWCNN, you need to do the following:
+```python
+from mwcnn import DEFAULT_N_FILTERS_PER_SCALE_CONF, DEFAULT_N_CONVS_PER_SCALE_CONF, MWCNN
+
+model = Model(
+  n_filters_per_scale=DEFAULT_N_FILTERS_PER_SCALE_CONF,
+  n_convs_per_scale=DEFAULT_N_CONVS_PER_SCALE_CONF,
+  n_first_convs=0,
+  bn=True,
+)
+```
 
 ## Convolution blocks
 
