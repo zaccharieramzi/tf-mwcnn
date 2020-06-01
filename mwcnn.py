@@ -63,7 +63,8 @@ class IWT(Layer):
         # https://stackoverflow.com/questions/62092147/how-to-efficiently-assign-to-a-slice-of-a-tensor-in-tensorflow
         in_shape = tf.shape(inputs)
         batch_size = in_shape[0]
-        height, width = in_shape[1:3]
+        height = in_shape[1]
+        width = in_shape[2]
         outputs = tf.zeros([batch_size, 2 * height, 2* width, 1])
         # for now we only consider greyscale
         x1 = inputs[..., 0:1] / 2
