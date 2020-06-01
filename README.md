@@ -32,7 +32,7 @@ The Figures defining the implementations are:
 - 3. in the conference paper.
 - 3. in the journal paper.
 
-These differences are acknowledged in the journal paper:
+Some of these differences are acknowledged in the journal paper:
 > Compared to our previous work [24], we have made several improvements such as:
 > (i) Instead of directly decomposing input images by DWT, we first use conv
 > blocks to extract features from input, which is empirically shown to be
