@@ -32,6 +32,13 @@ The Figures defining the implementations are:
 - 3. in the conference paper.
 - 3. in the journal paper.
 
+These differences are acknowledged in the journal paper:
+> Compared to our previous work [24], we have made several improvements such as:
+> (i) Instead of directly decomposing input images by DWT, we first use conv
+> blocks to extract features from input, which is empirically shown to be
+> beneficial for image restoration. (ii) In the 3rd hierarchical level, we use
+> more feature maps to enhance feature representation.
+
 ## Convolution blocks
 
 The batch normalization is the only difference.
@@ -57,6 +64,7 @@ In the journal paper, there are first convolutions before the DWT.
 
 In the conference paper, there are 4 convolution blocks per scale.
 In the journal paper, there are 3 convolution blocks per scale.
+The number of convolution blocks per scale are also different in the 2 papers.
 
 # Contributing
 
