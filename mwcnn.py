@@ -140,7 +140,7 @@ class MWCNN(Model):
                 kernel_size=self.kernel_size,
                 bn=self.bn,
             ) for _ in range(2 * self.n_first_convs)]
-            self.first_convs[-1] =  Conv2D(
+            self.first_convs[-1] = Conv2D(
                 1,
                 self.kernel_size,
                 padding='same',
