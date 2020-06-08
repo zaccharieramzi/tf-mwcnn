@@ -26,7 +26,9 @@ def test_mwcnn():
         n_first_convs=2,
         first_conv_n_filters=4,
     )
-    model.build(tf.TensorShape([None, None, None, 1]))
+    shape = [1, 32, 32, 1]
+    res = model(tf.zeros(shape))
+    assert res.shape.as_list() == shape
 
 def test_mwcnn_conference():
     model = MWCNN(
@@ -36,4 +38,6 @@ def test_mwcnn_conference():
         first_conv_n_filters=0,
         bn=True,
     )
-    model.build(tf.TensorShape([None, None, None, 1]))
+    shape = [1, 32, 32, 1]
+    res = model(tf.zeros(shape))
+    assert res.shape.as_list() == shape
