@@ -65,12 +65,13 @@ class IWT(Layer):
         batch_size = in_shape[0]
         height = in_shape[1]
         width = in_shape[2]
-        outputs = tf.zeros([batch_size, 2 * height, 2* width, 1])
+        n_channels = in_shape[3] // 4
+        outputs = tf.zeros([batch_size, 2 * height, 2* width, n_channels])
         # for now we only consider greyscale
-        x1 = inputs[..., 0:1] / 2
-        x2 = inputs[..., 1:2] / 2
-        x3 = inputs[..., 2:3] / 2
-        x4 = inputs[..., 3:4] / 2
+        x1 = inputs[..., 0:n_channels] / 2
+        x2 = inputs[..., n_channels:2*n_channels] / 2
+        x3 = inputs[..., 2*n_channels:3*n_channels] / 2
+        x4 = inputs[..., 3*n_channels:4*n_channels] / 2
         # in the following, E denotes even and O denotes odd
         x_EE = x1 - x2 - x3 + x4
         x_OE = x1 - x2 + x3 - x4
