@@ -162,7 +162,7 @@ class MWCNN(Model):
     def n_filters_for_conv_for_scale(self, i_scale, i_conv):
         n_filters = self.n_filters_per_scale[i_scale]
         if i_conv == self.n_convs_per_scale[i_scale] * 2 - 1:
-            if i_scale == 0
+            if i_scale == 0:
                 n_filters = 4 * self.first_conv_n_filters
             else:
                 n_filters = 4 * self.n_filters_per_scale[i_scale-1]
