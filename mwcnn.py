@@ -151,7 +151,7 @@ class MWCNN(Model):
         # the last convolution is without bn and relu, and also has only
         # 4 filters, that's why we treat it separately
         self.conv_blocks_per_scale[0][-1] = Conv2D(
-            4,
+            4 * self.first_conv_n_filters,
             self.kernel_size,
             padding='same',
             use_bias=True,
