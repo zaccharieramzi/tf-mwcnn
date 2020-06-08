@@ -162,7 +162,10 @@ class MWCNN(Model):
     def n_filters_for_conv_for_scale(self, i_scale, i_conv):
         n_filters = self.n_filters_per_scale[i_scale]
         if i_conv == self.n_convs_per_scale[i_scale] * 2 - 1:
-            n_filters *= 4
+            if i_scale == 0
+                n_filters = 4 * self.first_conv_n_filters
+            else:
+                n_filters = 4 * self.n_filters_per_scale[i_scale-1]
         return n_filters
 
     def call(self, inputs):
@@ -171,6 +174,7 @@ class MWCNN(Model):
         if self.n_first_convs > 0:
             for conv in self.first_convs[:self.n_first_convs]:
                 current_feature = conv(current_feature)
+            first_conv_feature = current_feature
         for i_scale in range(self.n_scales):
             current_feature = self.pooling(current_feature)
             n_convs = self.n_convs_per_scale[i_scale]
@@ -186,6 +190,7 @@ class MWCNN(Model):
                 current_feature = conv(current_feature)
         current_feature = self.unpooling(current_feature)
         if self.n_first_convs > 0:
+            current_feature = current_feature + first_conv_feature
             for conv in self.first_convs[self.n_first_convs:]:
                 current_feature = conv(current_feature)
         outputs = inputs + current_feature
