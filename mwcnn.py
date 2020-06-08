@@ -65,8 +65,9 @@ class IWT(Layer):
         batch_size = in_shape[0]
         height = in_shape[1]
         width = in_shape[2]
-        n_channels = in_shape[3] // 4
-        outputs = tf.zeros([batch_size, 2 * height, 2* width, n_channels])
+        # the number of channels can't be unknown for the convolutions
+        n_channels = inputs.shape[3] // 4
+        outputs = tf.zeros([batch_size, 2 * height, 2 * width, n_channels])
         # for now we only consider greyscale
         x1 = inputs[..., 0:n_channels] / 2
         x2 = inputs[..., n_channels:2*n_channels] / 2
