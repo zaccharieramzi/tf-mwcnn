@@ -1,5 +1,7 @@
 # TensorFlow implementation of the MWCNN
 
+![GitHub Workflow Build Status](https://github.com/zaccharieramzi/tf-mwcnn/workflows/Continuous%20testing/badge.svg)
+
 The MWCNN is a network introduced by Pengju Liu et al. in
 "Multi-Level Wavelet-CNN for Image Restoration", CVPR 2018, and refined in
 "Multi-Level Wavelet Convolutional Neural Networks", IEEE Access June 2019.
