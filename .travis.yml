@@ -1,7 +1,0 @@
-language: python
-install:
-  - pip install pytest numpy
-  - pip install tensorflow
-
-script:
-  - pytest mwcnn_test.py
